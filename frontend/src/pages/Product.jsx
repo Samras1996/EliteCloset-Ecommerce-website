@@ -1,31 +1,30 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { ShopContext } from '../context/ShopContext';
 import { assets } from '../assets/assets';
+import RelatedProducts from '../components/RelatedProducts';
 
 const Product = () => {
 
   const {productId} = useParams();
-  const {products , currency} = useContext(ShopContext);
+  const {products , currency, addToCart } = useContext(ShopContext);
   const [productData,setProductData] = useState(false);
   const [image,setImage] = useState('')
   const [size, setSize] = useState('')
 
-  const fetchProductData = async () => {
+const fetchProductData = useCallback(async () => {
+  products.map((item) => {
+    if (item._id === productId) {
+      setProductData(item);
+      setImage(item.image[0]);
+    }
+  });
+}, [products, productId]);
 
-    products.map((item)=>{
-      if(item._id === productId) {
-        setProductData(item)
-        setImage(item.image[0])
-        console.log(item);
-        return null;
-      }
-    })
-  }
 
-  useEffect(()=>{
-    fetchProductData();
-  },[productId])
+useEffect(() => {
+  fetchProductData();
+}, [fetchProductData]);
 
   return productData ? (
     <div  className='border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100 border-gray-400 -mt-10'>
@@ -68,7 +67,7 @@ const Product = () => {
               ))}
             </div>
           </div>
-          <button className='bg-black text-white px-8 py-3 text-sm active:bg-gray-700'>ADD TO CART</button>
+          <button onClick={()=>addToCart(productData._id,size)} className='bg-black text-white px-8 py-3 text-sm active:bg-gray-700'>ADD TO CART</button>
           <hr className='mt-8 sm:w-4/5  border-gray-400'/>
           <div className='text-sm text-gray-500 mt-5 flex flex-col gap-1'>
             <p>100% Original product.</p>
@@ -88,10 +87,12 @@ const Product = () => {
         <div className='flex flex-col gap-4 border px-6 py-6 text-sm text-gray-500  border-gray-400'>
           <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. </p>
           <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. </p>
-
         </div>
-
       </div>
+
+      {/* display related products */}
+
+      <RelatedProducts category={productData.category} subCategory={productData.subCategory} />
 
     </div>
   ) : <div className='opacity-0'></div>
